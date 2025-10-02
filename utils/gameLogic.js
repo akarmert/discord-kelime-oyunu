@@ -167,7 +167,7 @@ async function handleMessage(message) {
     const lastLetter = getLastLetter(userWord);
 
     // Onay mesajı gönder
-    await message.channel.send(`✅ **${userWord}** kelimesi kabul edildi! Sıradaki kelime **${lastLetter.toUpperCase()}** harfi ile başlamalı.`);
+    await message.channel.send(`✅ **${userWord}** doğru! Sıradaki harf **${lastLetter.toUpperCase()}**.`);
 
   } catch (error) {
     console.error('Mesaj işlenirken hata:', error);
