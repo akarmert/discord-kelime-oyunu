@@ -1,5 +1,5 @@
 // ============================================
-// MertinBotu - Türkçe Kelime Zinciri Oyunu
+// ZincirKelime - Türkçe Kelime Zinciri Oyunu
 // Ana Başlatma Dosyası
 // ============================================
 
@@ -106,7 +106,7 @@ client.once('ready', async () => {
 
 /**
  * Kullanıcı bir slash komutu kullandığında tetiklenir
- * Örnek: /mertinbotu basla
+ * Örnek: /zincirkelime basla
  */
 client.on('interactionCreate', async interaction => {
   // Sadece slash komutlarını işle (buton, menü vb. değil)
@@ -181,7 +181,7 @@ app.get('/', (req, res) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>MertinBotu</title>
+      <title>ZincirKelime</title>
       <meta charset="UTF-8">
       <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
@@ -191,7 +191,7 @@ app.get('/', (req, res) => {
       </style>
     </head>
     <body>
-      <h1>🎮 MertinBotu</h1>
+      <h1>🎮 ZincirKelime</h1>
       <p>Türkçe Kelime Zinciri Oyunu Discord Botu</p>
       <p>
         <a href="/terms">Kullanım Şartları</a> |

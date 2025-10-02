@@ -1,5 +1,5 @@
 {
-  "name": "mertinbotu",
+  "name": "zincirkelime",
   "version": "1.0.0",
   "description": "Turkish Word Chain Game Discord Bot",
   "main": "index.js",
@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "node index.js",
     "setup-db": "node scripts/setupDatabase.js",
+    "migrate-db": "node scripts/migrateDatabase.js",
     "railway": "node scripts/setupDatabase.js && node index.js"
   },
   "keywords": ["discord", "bot", "turkish", "word-game"],

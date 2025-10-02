@@ -1,6 +1,6 @@
 // ============================================
-// MERTİNBOTU ANA KOMUT DOSYASI
-// /mertinbotu slash komutu ve alt komutları
+// ZİNCİRKELİME ANA KOMUT DOSYASI
+// /zincirkelime slash komutu ve alt komutları
 // ============================================
 
 // Discord.js modüllerini içe aktar
@@ -27,7 +27,7 @@ const { getGameStats } = require('../utils/gameLogic');
 module.exports = {
   // Komut yapısını tanımla
   data: new SlashCommandBuilder()
-    .setName('mertinbotu')
+    .setName('zincirkelime')
     .setDescription('Kelime zinciri oyunu komutları')
 
     // Alt komut: Kanal ayarlama
@@ -126,7 +126,7 @@ module.exports = {
 
 /**
  * KANAL AYARLAMA İŞLEYİCİSİ
- * /mertinbotu kanaladi komutu
+ * /zincirkelime kanaladi komutu
  * Oyunun oynanacağı kanalı ayarlar (Sadece yöneticiler)
  */
 async function handleSetChannel(interaction) {
@@ -154,18 +154,34 @@ async function handleSetChannel(interaction) {
 
 /**
  * OYUN BAŞLATMA İŞLEYİCİSİ
- * /mertinbotu basla komutu
- * Kelime zinciri oyununu başlatır
+ * /zincirkelime basla komutu
+ * Kelime zinciri oyununu başlatır (Sadece yöneticiler)
  */
 async function handleStartGame(interaction) {
   const guildId = interaction.guild.id;
+
+  // Kullanıcının yönetici yetkisi olup olmadığını kontrol et
+  if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+    return await interaction.reply({
+      content: '❌ Bu komutu kullanmak için yönetici yetkisine sahip olmalısınız!',
+      ephemeral: true,
+    });
+  }
 
   // Oyun kanalının ayarlanıp ayarlanmadığını kontrol et
   const gameChannelId = getGameChannel(guildId);
 
   if (!gameChannelId) {
     return await interaction.reply({
-      content: '❌ Önce oyun kanalını ayarlamalısınız! `/mertinbotu kanaladi` komutunu kullanın.',
+      content: '❌ Önce oyun kanalını ayarlamalısınız! `/zincirkelime kanaladi` komutunu kullanın.',
+      ephemeral: true,
+    });
+  }
+
+  // Komutun oyun kanalında kullanılıp kullanılmadığını kontrol et
+  if (interaction.channelId !== gameChannelId) {
+    return await interaction.reply({
+      content: `❌ Bu komutu sadece oyun kanalında (<#${gameChannelId}>) kullanabilirsiniz!`,
       ephemeral: true,
     });
   }
@@ -175,7 +191,7 @@ async function handleStartGame(interaction) {
 
   if (gameState && gameState.is_active) {
     return await interaction.reply({
-      content: '❌ Oyun zaten aktif! Bitirmek için `/mertinbotu bitir` komutunu kullanın.',
+      content: '❌ Oyun zaten aktif! Bitirmek için `/zincirkelime bitir` komutunu kullanın.',
       ephemeral: true,
     });
   }
@@ -208,7 +224,7 @@ async function handleStartGame(interaction) {
       `• Kelimeler son harfle başlamalı\n` +
       `• Daha önce kullanılmış kelimeler tekrar kullanılamaz\n` +
       `• Sadece Türkçe kelimeler geçerlidir\n\n` +
-      `Oyunu bitirmek için: \`/mertinbotu bitir\``,
+      `Oyunu bitirmek için: \`/zincirkelime bitir\``,
   });
 
   // Komutu kullanan kişiye onay mesajı gönder
@@ -220,11 +236,37 @@ async function handleStartGame(interaction) {
 
 /**
  * OYUN DURDURMA İŞLEYİCİSİ
- * /mertinbotu bitir komutu
- * Aktif oyunu durdurur ve istatistikleri gösterir
+ * /zincirkelime bitir komutu
+ * Aktif oyunu durdurur ve istatistikleri gösterir (Sadece yöneticiler)
  */
 async function handleStopGame(interaction) {
   const guildId = interaction.guild.id;
+
+  // Kullanıcının yönetici yetkisi olup olmadığını kontrol et
+  if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+    return await interaction.reply({
+      content: '❌ Bu komutu kullanmak için yönetici yetkisine sahip olmalısınız!',
+      ephemeral: true,
+    });
+  }
+
+  // Oyun kanalının ayarlanıp ayarlanmadığını kontrol et
+  const gameChannelId = getGameChannel(guildId);
+
+  if (!gameChannelId) {
+    return await interaction.reply({
+      content: '❌ Oyun kanalı ayarlanmamış!',
+      ephemeral: true,
+    });
+  }
+
+  // Komutun oyun kanalında kullanılıp kullanılmadığını kontrol et
+  if (interaction.channelId !== gameChannelId) {
+    return await interaction.reply({
+      content: `❌ Bu komutu sadece oyun kanalında (<#${gameChannelId}>) kullanabilirsiniz!`,
+      ephemeral: true,
+    });
+  }
 
   // Oyunun aktif olup olmadığını kontrol et
   const gameState = getGameState(guildId);
@@ -243,7 +285,6 @@ async function handleStopGame(interaction) {
   stopGame(guildId);
 
   // Oyun kanalını getir
-  const gameChannelId = getGameChannel(guildId);
   const gameChannel = await interaction.client.channels.fetch(gameChannelId);
 
   // Oyun kanalına bitiş mesajı ve istatistikleri gönder
@@ -252,7 +293,7 @@ async function handleStopGame(interaction) {
       `📊 İstatistikler:\n` +
       `• Toplam kelime: ${stats.word_count}\n` +
       `• Oyuncu sayısı: ${stats.player_count}\n\n` +
-      `Yeni oyun başlatmak için: \`/mertinbotu basla\``,
+      `Yeni oyun başlatmak için: \`/zincirkelime basla\``,
   });
 
   // Komutu kullanan kişiye onay mesajı gönder
@@ -264,11 +305,29 @@ async function handleStopGame(interaction) {
 
 /**
  * İSTATİSTİK GÖSTERME İŞLEYİCİSİ
- * /mertinbotu istatistik komutu
- * Oyun istatistiklerini embed olarak gösterir
+ * /zincirkelime istatistik komutu
+ * Oyun istatistiklerini embed olarak gösterir (Sadece oyun kanalında)
  */
 async function handleStats(interaction) {
   const guildId = interaction.guild.id;
+
+  // Oyun kanalının ayarlanıp ayarlanmadığını kontrol et
+  const gameChannelId = getGameChannel(guildId);
+
+  if (!gameChannelId) {
+    return await interaction.reply({
+      content: '❌ Oyun kanalı ayarlanmamış!',
+      ephemeral: true,
+    });
+  }
+
+  // Komutun oyun kanalında kullanılıp kullanılmadığını kontrol et
+  if (interaction.channelId !== gameChannelId) {
+    return await interaction.reply({
+      content: `❌ Bu komutu sadece oyun kanalında (<#${gameChannelId}>) kullanabilirsiniz!`,
+      ephemeral: true,
+    });
+  }
 
   // Oyun durumunu kontrol et
   const gameState = getGameState(guildId);
@@ -334,17 +393,37 @@ async function handleStats(interaction) {
 
 /**
  * BOT BİLGİSİ GÖSTERME İŞLEYİCİSİ
- * /mertinbotu bilgi komutu
- * Bot hakkında genel bilgileri gösterir
+ * /zincirkelime bilgi komutu
+ * Bot hakkında genel bilgileri gösterir (Sadece oyun kanalında)
  */
 async function handleInfo(interaction) {
+  const guildId = interaction.guild.id;
+
+  // Oyun kanalının ayarlanıp ayarlanmadığını kontrol et
+  const gameChannelId = getGameChannel(guildId);
+
+  if (!gameChannelId) {
+    return await interaction.reply({
+      content: '❌ Oyun kanalı ayarlanmamış!',
+      ephemeral: true,
+    });
+  }
+
+  // Komutun oyun kanalında kullanılıp kullanılmadığını kontrol et
+  if (interaction.channelId !== gameChannelId) {
+    return await interaction.reply({
+      content: `❌ Bu komutu sadece oyun kanalında (<#${gameChannelId}>) kullanabilirsiniz!`,
+      ephemeral: true,
+    });
+  }
+
   // Veritabanındaki toplam kelime sayısını al
   const totalWords = getWordCount();
 
   // Bilgi embed'i oluştur
   const embed = {
     color: 0x5865F2, // Discord mor rengi
-    title: '🤖 MertinBotu',
+    title: '🤖 ZincirKelime',
     description: 'Türkçe kelime zinciri oyunu botu',
     fields: [
       {
@@ -354,26 +433,27 @@ async function handleInfo(interaction) {
       },
       {
         name: '🎮 Komutlar',
-        value: '`/mertinbotu kanaladi` - Oyun kanalını ayarla\n' +
-          '`/mertinbotu basla` - Oyunu başlat\n' +
-          '`/mertinbotu bitir` - Oyunu bitir\n' +
-          '`/mertinbotu istatistik` - İstatistikleri göster\n' +
-          '`/mertinbotu bilgi` - Bot bilgisi',
+        value: '`/zincirkelime kanaladi` - Oyun kanalını ayarla (Yönetici)\n' +
+          '`/zincirkelime basla` - Oyunu başlat (Yönetici)\n' +
+          '`/zincirkelime bitir` - Oyunu bitir (Yönetici)\n' +
+          '`/zincirkelime istatistik` - İstatistikleri göster\n' +
+          '`/zincirkelime bilgi` - Bot bilgisi',
         inline: false,
       },
       {
         name: '📖 Nasıl Oynanır?',
         value: '1. Yönetici oyun kanalını ayarlar\n' +
-          '2. Oyun başlatılır\n' +
+          '2. Yönetici oyunu başlatır\n' +
           '3. Bot bir kelime söyler\n' +
-          '4. Siz son harfle başlayan kelime yazarsınız\n' +
-          '5. Geçerli kelimeler ✅ alır, geçersizler silinir',
+          '4. Herkes son harfle başlayan kelime yazar\n' +
+          '5. Geçerli kelimeler ✅ alır, geçersizler silinir\n' +
+          '6. Yönetici oyunu bitirir',
         inline: false,
       },
     ],
     timestamp: new Date().toISOString(), // Zaman damgası
     footer: {
-      text: 'MertinBotu • discord.js v14',
+      text: 'ZincirKelime • discord.js v14',
     },
   };
 

@@ -1,4 +1,4 @@
-# 🎮 MertinBotu - Türkçe Kelime Zinciri Oyunu
+# 🎮 ZincirKelime - Türkçe Kelime Zinciri Oyunu
 
 Discord sunucularında Türkçe kelime zinciri oyunu oynatan bot.
 
@@ -7,19 +7,20 @@ Discord sunucularında Türkçe kelime zinciri oyunu oynatan bot.
 - 🎮 Kelime zinciri oyunu
 - ✅ 2.5M+ Türkçe kelime veritabanı
 - 🔄 Tekrar önleme sistemi
+- 👥 Herkes oynayabilir, yöneticiler yönetir
 - 📊 Oyun istatistikleri
 - 🌐 Kullanım şartları ve gizlilik sayfaları
 - ☁️ Railway.app deployment desteği
 
 ## 📖 Oyun Kuralları
 
-1. Yönetici `/mertinbotu kanaladi` ile oyun kanalını ayarlar
-2. `/mertinbotu basla` ile oyun başlatılır
+1. **Yönetici** `/zincirkelime kanaladi` ile oyun kanalını ayarlar
+2. **Yönetici** `/zincirkelime basla` ile oyunu başlatır (sadece oyun kanalında)
 3. Bot rastgele bir Türkçe kelime gönderir
-4. Kullanıcılar **son harfle başlayan** kelime yazar
+4. **Herkes** son harfle başlayan kelime yazar
 5. Geçerli kelimeler ✅ alır
 6. Geçersiz kelimeler silinir
-7. `/mertinbotu bitir` ile oyun durdurulur
+7. **Yönetici** `/zincirkelime bitir` ile oyunu durdurur (sadece oyun kanalında)
 
 ## 🚀 Kurulum
 
@@ -58,7 +59,13 @@ PORT=3000
 npm run setup-db
 ```
 
-6. **Botu başlatın:**
+6. **(Opsiyonel) Eski veritabanını migrate edin:**
+```bash
+npm run migrate-db
+```
+> Not: Sadece eski versiyondan güncelleme yapıyorsanız gerekli
+
+7. **Botu başlatın:**
 ```bash
 npm start
 ```
@@ -93,7 +100,7 @@ npm start
 ```
 discord-kelime-oyunu/
 ├── commands/
-│   └── mertinbotu.js       # Slash komutlar
+│   └── zincirkelime.js     # Slash komutlar
 ├── public/
 │   ├── terms.html          # Kullanım şartları
 │   └── privacy.html        # Gizlilik politikası
@@ -111,11 +118,13 @@ discord-kelime-oyunu/
 
 ## 🎯 Komutlar
 
-- `/mertinbotu kanaladi` - Oyun kanalını ayarla (Yönetici)
-- `/mertinbotu basla` - Oyunu başlat
-- `/mertinbotu bitir` - Oyunu durdur
-- `/mertinbotu istatistik` - İstatistikleri göster
-- `/mertinbotu bilgi` - Bot bilgisi
+| Komut | Yetki | Kanal | Açıklama |
+|-------|-------|-------|----------|
+| `/zincirkelime kanaladi` | Yönetici | Her kanal | Oyun kanalını ayarla |
+| `/zincirkelime basla` | Yönetici | Oyun kanalı | Oyunu başlat |
+| `/zincirkelime bitir` | Yönetici | Oyun kanalı | Oyunu durdur |
+| `/zincirkelime istatistik` | Herkes | Oyun kanalı | İstatistikleri göster |
+| `/zincirkelime bilgi` | Herkes | Oyun kanalı | Bot bilgisi |
 
 ## 🌐 Web Sayfaları
 
