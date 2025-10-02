@@ -1,19 +1,36 @@
+// ============================================
+// MERTİNBOTU ANA KOMUT DOSYASI
+// /mertinbotu slash komutu ve alt komutları
+// ============================================
+
+// Discord.js modüllerini içe aktar
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+
+// Veritabanı fonksiyonlarını içe aktar
 const {
-  setGameChannel,
-  getGameChannel,
-  startGame,
-  stopGame,
-  getGameState,
-  getRandomWord,
-  getWordCount,
+  setGameChannel,    // Oyun kanalını ayarla
+  getGameChannel,    // Oyun kanalını getir
+  startGame,         // Oyunu başlat
+  stopGame,          // Oyunu durdur
+  getGameState,      // Oyun durumunu getir
+  getRandomWord,     // Rastgele kelime getir
+  getWordCount,      // Toplam kelime sayısı
 } = require('../utils/database');
+
+// Oyun mantığı fonksiyonlarını içe aktar
 const { getGameStats } = require('../utils/gameLogic');
 
+// ============================================
+// SLASH KOMUT TANIMI
+// ============================================
+
 module.exports = {
+  // Komut yapısını tanımla
   data: new SlashCommandBuilder()
     .setName('mertinbotu')
     .setDescription('Kelime zinciri oyunu komutları')
+
+    // Alt komut: Kanal ayarlama
     .addSubcommand(subcommand =>
       subcommand
         .setName('kanaladi')
@@ -25,31 +42,49 @@ module.exports = {
             .setRequired(true)
         )
     )
+
+    // Alt komut: Oyunu başlat
     .addSubcommand(subcommand =>
       subcommand
         .setName('basla')
         .setDescription('Kelime zinciri oyununu başlat')
     )
+
+    // Alt komut: Oyunu bitir
     .addSubcommand(subcommand =>
       subcommand
         .setName('bitir')
         .setDescription('Kelime zinciri oyununu bitir')
     )
+
+    // Alt komut: İstatistikler
     .addSubcommand(subcommand =>
       subcommand
         .setName('istatistik')
         .setDescription('Oyun istatistiklerini göster')
     )
+
+    // Alt komut: Bot bilgisi
     .addSubcommand(subcommand =>
       subcommand
         .setName('bilgi')
         .setDescription('Bot hakkında bilgi')
     ),
 
+  // ============================================
+  // KOMUT ÇALIŞTIRMA FONKSİYONU
+  // ============================================
+
+  /**
+   * Komut çalıştırıldığında tetiklenir
+   * @param {Interaction} interaction - Discord interaction objesi
+   */
   async execute(interaction) {
+    // Hangi alt komutun kullanıldığını al
     const subcommand = interaction.options.getSubcommand();
 
     try {
+      // Alt komuta göre ilgili fonksiyonu çağır
       switch (subcommand) {
         case 'kanaladi':
           await handleSetChannel(interaction);
@@ -70,10 +105,12 @@ module.exports = {
           await interaction.reply({ content: 'Bilinmeyen komut!', ephemeral: true });
       }
     } catch (error) {
-      console.error('Error executing command:', error);
-      
+      console.error('Komut çalıştırılırken hata:', error);
+
+      // Hata mesajı hazırla
       const errorMessage = { content: 'Komut çalıştırılırken bir hata oluştu!', ephemeral: true };
-      
+
+      // Eğer komut zaten yanıtlandıysa followUp kullan, değilse reply
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(errorMessage);
       } else {
@@ -83,37 +120,47 @@ module.exports = {
   },
 };
 
+// ============================================
+// ALT KOMUT İŞLEYİCİLERİ
+// ============================================
+
 /**
- * Handle setting the game channel
+ * KANAL AYARLAMA İŞLEYİCİSİ
+ * /mertinbotu kanaladi komutu
+ * Oyunun oynanacağı kanalı ayarlar (Sadece yöneticiler)
  */
 async function handleSetChannel(interaction) {
-  // Check if user has administrator permission
+  // Kullanıcının yönetici yetkisi olup olmadığını kontrol et
   if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
     return await interaction.reply({
       content: '❌ Bu komutu kullanmak için yönetici yetkisine sahip olmalısınız!',
-      ephemeral: true,
+      ephemeral: true, // Sadece komutu kullanan görsün
     });
   }
 
+  // Seçilen kanalı al
   const channel = interaction.options.getChannel('kanal');
   const guildId = interaction.guild.id;
 
-  // Set the game channel
+  // Oyun kanalını veritabanına kaydet
   setGameChannel(guildId, channel.id);
 
+  // Başarı mesajı gönder
   await interaction.reply({
     content: `✅ Oyun kanalı <#${channel.id}> olarak ayarlandı!`,
-    ephemeral: false,
+    ephemeral: false, // Herkes görsün
   });
 }
 
 /**
- * Handle starting the game
+ * OYUN BAŞLATMA İŞLEYİCİSİ
+ * /mertinbotu basla komutu
+ * Kelime zinciri oyununu başlatır
  */
 async function handleStartGame(interaction) {
   const guildId = interaction.guild.id;
 
-  // Check if game channel is set
+  // Oyun kanalının ayarlanıp ayarlanmadığını kontrol et
   const gameChannelId = getGameChannel(guildId);
 
   if (!gameChannelId) {
@@ -123,7 +170,7 @@ async function handleStartGame(interaction) {
     });
   }
 
-  // Check if game is already active
+  // Oyunun zaten aktif olup olmadığını kontrol et
   const gameState = getGameState(guildId);
 
   if (gameState && gameState.is_active) {
@@ -133,7 +180,7 @@ async function handleStartGame(interaction) {
     });
   }
 
-  // Get a random word to start
+  // Veritabanından rastgele bir başlangıç kelimesi al
   const initialWord = getRandomWord();
 
   if (!initialWord) {
@@ -143,15 +190,16 @@ async function handleStartGame(interaction) {
     });
   }
 
-  // Start the game
+  // Oyunu başlat (veritabanına kaydet)
   startGame(guildId, initialWord);
 
-  // Get the last letter
+  // Başlangıç kelimesinin son harfini al (sıradaki kelime için)
   const lastLetter = initialWord.charAt(initialWord.length - 1);
 
-  // Send message to game channel
+  // Oyun kanalını getir
   const gameChannel = await interaction.client.channels.fetch(gameChannelId);
 
+  // Oyun kanalına başlangıç mesajı gönder
   await gameChannel.send({
     content: `🎮 **Kelime Zinciri Oyunu Başladı!**\n\n` +
       `İlk kelime: **${initialWord}**\n` +
@@ -163,6 +211,7 @@ async function handleStartGame(interaction) {
       `Oyunu bitirmek için: \`/mertinbotu bitir\``,
   });
 
+  // Komutu kullanan kişiye onay mesajı gönder
   await interaction.reply({
     content: `✅ Oyun <#${gameChannelId}> kanalında başlatıldı!`,
     ephemeral: true,
@@ -170,12 +219,14 @@ async function handleStartGame(interaction) {
 }
 
 /**
- * Handle stopping the game
+ * OYUN DURDURMA İŞLEYİCİSİ
+ * /mertinbotu bitir komutu
+ * Aktif oyunu durdurur ve istatistikleri gösterir
  */
 async function handleStopGame(interaction) {
   const guildId = interaction.guild.id;
 
-  // Check if game is active
+  // Oyunun aktif olup olmadığını kontrol et
   const gameState = getGameState(guildId);
 
   if (!gameState || !gameState.is_active) {
@@ -185,16 +236,17 @@ async function handleStopGame(interaction) {
     });
   }
 
-  // Get stats before stopping
+  // Oyunu durdurmadan önce istatistikleri al
   const stats = getGameStats(guildId);
 
-  // Stop the game
+  // Oyunu durdur (veritabanında is_active = 0 yap)
   stopGame(guildId);
 
-  // Get game channel
+  // Oyun kanalını getir
   const gameChannelId = getGameChannel(guildId);
   const gameChannel = await interaction.client.channels.fetch(gameChannelId);
 
+  // Oyun kanalına bitiş mesajı ve istatistikleri gönder
   await gameChannel.send({
     content: `🏁 **Oyun Bitti!**\n\n` +
       `📊 İstatistikler:\n` +
@@ -203,6 +255,7 @@ async function handleStopGame(interaction) {
       `Yeni oyun başlatmak için: \`/mertinbotu basla\``,
   });
 
+  // Komutu kullanan kişiye onay mesajı gönder
   await interaction.reply({
     content: '✅ Oyun durduruldu!',
     ephemeral: true,
@@ -210,12 +263,14 @@ async function handleStopGame(interaction) {
 }
 
 /**
- * Handle showing statistics
+ * İSTATİSTİK GÖSTERME İŞLEYİCİSİ
+ * /mertinbotu istatistik komutu
+ * Oyun istatistiklerini embed olarak gösterir
  */
 async function handleStats(interaction) {
   const guildId = interaction.guild.id;
 
-  // Get game state
+  // Oyun durumunu kontrol et
   const gameState = getGameState(guildId);
 
   if (!gameState) {
@@ -225,20 +280,21 @@ async function handleStats(interaction) {
     });
   }
 
-  // Get stats
+  // Oyun istatistiklerini al
   const stats = getGameStats(guildId);
 
-  // Get word count from database
+  // Veritabanındaki toplam kelime sayısını al
   const totalWords = getWordCount();
 
+  // Embed (zengin mesaj) oluştur
   const embed = {
-    color: 0x5865F2,
+    color: 0x5865F2, // Discord mor rengi
     title: '📊 Oyun İstatistikleri',
     fields: [
       {
         name: '🎮 Oyun Durumu',
         value: gameState.is_active ? '✅ Aktif' : '❌ Pasif',
-        inline: true,
+        inline: true, // Yan yana göster
       },
       {
         name: '📝 Mevcut Kelime',
@@ -266,30 +322,35 @@ async function handleStats(interaction) {
         inline: true,
       },
     ],
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString(), // Zaman damgası
     footer: {
       text: 'MertinBotu',
     },
   };
 
+  // Embed'i gönder (herkes görsün)
   await interaction.reply({ embeds: [embed], ephemeral: false });
 }
 
 /**
- * Handle showing bot info
+ * BOT BİLGİSİ GÖSTERME İŞLEYİCİSİ
+ * /mertinbotu bilgi komutu
+ * Bot hakkında genel bilgileri gösterir
  */
 async function handleInfo(interaction) {
+  // Veritabanındaki toplam kelime sayısını al
   const totalWords = getWordCount();
 
+  // Bilgi embed'i oluştur
   const embed = {
-    color: 0x5865F2,
+    color: 0x5865F2, // Discord mor rengi
     title: '🤖 MertinBotu',
     description: 'Türkçe kelime zinciri oyunu botu',
     fields: [
       {
         name: '📚 Veritabanı',
         value: `${totalWords.toLocaleString()} Türkçe kelime`,
-        inline: false,
+        inline: false, // Tam genişlik
       },
       {
         name: '🎮 Komutlar',
@@ -310,12 +371,13 @@ async function handleInfo(interaction) {
         inline: false,
       },
     ],
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString(), // Zaman damgası
     footer: {
       text: 'MertinBotu • discord.js v14',
     },
   };
 
+  // Embed'i gönder (herkes görsün)
   await interaction.reply({ embeds: [embed], ephemeral: false });
 }
 

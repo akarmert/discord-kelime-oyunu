@@ -1,90 +1,136 @@
+// ============================================
+// MertinBotu - Türkçe Kelime Zinciri Oyunu
+// Ana Başlatma Dosyası
+// ============================================
+
+// Ortam değişkenlerini yükle (.env dosyasından)
 require('dotenv').config();
+
+// Gerekli modülleri içe aktar
 const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
-// Create Discord client
+// Discord bot client'ı oluştur
+// Intents: Bot'un hangi olayları dinleyeceğini belirler
 const client = new Client({
   intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.Guilds,           // Sunucu bilgilerine erişim
+    GatewayIntentBits.GuildMessages,    // Mesajları okuma
+    GatewayIntentBits.MessageContent,   // Mesaj içeriğini okuma (önemli!)
   ],
 });
 
-// Initialize commands collection
+// Komutları saklamak için koleksiyon oluştur
 client.commands = new Collection();
 
-// Load commands
+// ============================================
+// KOMUT YÜKLEME SİSTEMİ
+// ============================================
+
+// Commands klasöründen tüm komutları yükle
 const commandsPath = path.join(__dirname, 'commands');
 if (fs.existsSync(commandsPath)) {
+  // .js uzantılı tüm dosyaları bul
   const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-  
+
+  // Her komut dosyasını yükle
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);
-    
+
+    // Komutun gerekli özelliklere sahip olup olmadığını kontrol et
     if ('data' in command && 'execute' in command) {
       client.commands.set(command.data.name, command);
-      console.log(`✅ Loaded command: ${command.data.name}`);
+      console.log(`✅ Komut yüklendi: ${command.data.name}`);
     } else {
-      console.log(`⚠️ Warning: ${file} is missing required "data" or "execute" property.`);
+      console.log(`⚠️ Uyarı: ${file} dosyasında "data" veya "execute" özelliği eksik.`);
     }
   }
 }
 
-// Register slash commands
+// ============================================
+// SLASH KOMUTLARINI DISCORD'A KAYDETME
+// ============================================
+
+/**
+ * Slash komutlarını Discord API'ye kaydeder
+ * Bu fonksiyon bot her başladığında çalışır
+ */
 async function registerCommands() {
   const commands = [];
-  
+
+  // Tüm komutları JSON formatına çevir
   for (const command of client.commands.values()) {
     commands.push(command.data.toJSON());
   }
-  
+
+  // Discord REST API client'ı oluştur
   const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
-  
+
   try {
-    console.log(`🔄 Started refreshing ${commands.length} application (/) commands.`);
-    
+    console.log(`🔄 ${commands.length} slash komutu Discord'a kaydediliyor...`);
+
+    // Komutları Discord'a gönder (global komutlar)
     const data = await rest.put(
       Routes.applicationCommands(process.env.APPLICATION_ID),
       { body: commands },
     );
-    
-    console.log(`✅ Successfully reloaded ${data.length} application (/) commands.`);
+
+    console.log(`✅ ${data.length} slash komutu başarıyla kaydedildi!`);
   } catch (error) {
-    console.error('❌ Error registering commands:', error);
+    console.error('❌ Komutlar kaydedilirken hata:', error);
   }
 }
 
-// Bot ready event
+// ============================================
+// BOT HAZIR OLDUĞUNDA ÇALIŞAN OLAY
+// ============================================
+
+/**
+ * Bot Discord'a bağlandığında ve hazır olduğunda tetiklenir
+ * Bu olay sadece bir kez çalışır
+ */
 client.once('ready', async () => {
-  console.log(`✅ Bot is online as ${client.user.tag}`);
-  console.log(`📊 Serving ${client.guilds.cache.size} servers`);
-  
-  // Register commands
+  console.log(`✅ Bot aktif: ${client.user.tag}`);
+  console.log(`📊 ${client.guilds.cache.size} sunucuda hizmet veriliyor`);
+
+  // Slash komutlarını Discord'a kaydet
   await registerCommands();
 });
 
-// Interaction handler (slash commands)
+// ============================================
+// SLASH KOMUT İŞLEYİCİSİ
+// ============================================
+
+/**
+ * Kullanıcı bir slash komutu kullandığında tetiklenir
+ * Örnek: /mertinbotu basla
+ */
 client.on('interactionCreate', async interaction => {
+  // Sadece slash komutlarını işle (buton, menü vb. değil)
   if (!interaction.isChatInputCommand()) return;
-  
+
+  // Komutu koleksiyondan bul
   const command = client.commands.get(interaction.commandName);
-  
+
+  // Komut bulunamadıysa hata ver
   if (!command) {
-    console.error(`❌ No command matching ${interaction.commandName} was found.`);
+    console.error(`❌ ${interaction.commandName} komutu bulunamadı.`);
     return;
   }
-  
+
   try {
+    // Komutu çalıştır
     await command.execute(interaction);
   } catch (error) {
-    console.error('❌ Error executing command:', error);
-    
+    console.error('❌ Komut çalıştırılırken hata:', error);
+
+    // Kullanıcıya hata mesajı göster
     const errorMessage = { content: 'Komut çalıştırılırken bir hata oluştu!', ephemeral: true };
-    
+
+    // Eğer komut zaten yanıtlandıysa followUp kullan, değilse reply
     if (interaction.replied || interaction.deferred) {
       await interaction.followUp(errorMessage);
     } else {
@@ -93,26 +139,43 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-// Message handler (for game logic)
+// ============================================
+// MESAJ İŞLEYİCİSİ (OYUN MANTIĞI)
+// ============================================
+
+/**
+ * Kullanıcı bir mesaj gönderdiğinde tetiklenir
+ * Kelime zinciri oyunu için kullanılır
+ */
 client.on('messageCreate', async message => {
-  // Ignore bot messages
+  // Bot mesajlarını yok say (sonsuz döngü önleme)
   if (message.author.bot) return;
-  
-  // Import game logic
+
+  // Oyun mantığı modülünü içe aktar
   const gameLogic = require('./utils/gameLogic');
-  
-  // Handle word chain game
+
+  // Mesajı oyun mantığına gönder (kelime kontrolü yapılacak)
   await gameLogic.handleMessage(message);
 });
 
-// Express server for static pages
+// ============================================
+// EXPRESS.JS WEB SUNUCUSU
+// ============================================
+
+// Express uygulaması oluştur
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files
+// Public klasöründeki statik dosyaları sun (CSS, resim vb.)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
+// ============================================
+// WEB SAYFALARI ROUTE'LARI
+// ============================================
+
+/**
+ * Ana sayfa - Bot hakkında bilgi
+ */
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -129,46 +192,75 @@ app.get('/', (req, res) => {
     </head>
     <body>
       <h1>🎮 MertinBotu</h1>
-      <p>Turkish Word Chain Game Discord Bot</p>
+      <p>Türkçe Kelime Zinciri Oyunu Discord Botu</p>
       <p>
-        <a href="/terms">Terms of Service</a> |
-        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Kullanım Şartları</a> |
+        <a href="/privacy">Gizlilik Politikası</a>
       </p>
     </body>
     </html>
   `);
 });
 
+/**
+ * Kullanım Şartları sayfası
+ */
 app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'terms.html'));
 });
 
+/**
+ * Gizlilik Politikası sayfası
+ */
 app.get('/privacy', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
 
-// Health check endpoint for Railway
+/**
+ * Sağlık kontrolü endpoint'i (Railway için)
+ * Bot'un çalışıp çalışmadığını kontrol eder
+ */
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', bot: client.user ? client.user.tag : 'offline' });
+  res.json({
+    status: 'ok',
+    bot: client.user ? client.user.tag : 'offline'
+  });
 });
 
-// Start Express server
+// ============================================
+// SUNUCULARI BAŞLAT
+// ============================================
+
+/**
+ * Express web sunucusunu başlat
+ * Railway otomatik olarak PORT değişkenini sağlar
+ */
 app.listen(PORT, () => {
-  console.log(`🌐 Express server running on port ${PORT}`);
-  console.log(`📄 Terms: http://localhost:${PORT}/terms`);
-  console.log(`📄 Privacy: http://localhost:${PORT}/privacy`);
+  console.log(`🌐 Web sunucusu çalışıyor: Port ${PORT}`);
+  console.log(`📄 Kullanım Şartları: http://localhost:${PORT}/terms`);
+  console.log(`📄 Gizlilik Politikası: http://localhost:${PORT}/privacy`);
 });
 
-// Login to Discord
+/**
+ * Discord bot'u başlat
+ * .env dosyasındaki BOT_TOKEN kullanılır
+ */
 client.login(process.env.BOT_TOKEN).catch(error => {
-  console.error('❌ Failed to login to Discord:', error);
-  process.exit(1);
+  console.error('❌ Discord\'a bağlanırken hata:', error);
+  process.exit(1); // Hata durumunda uygulamayı kapat
 });
 
-// Graceful shutdown
+// ============================================
+// GÜVENLE KAPATMA (GRACEFUL SHUTDOWN)
+// ============================================
+
+/**
+ * CTRL+C ile kapatıldığında temiz bir şekilde kapat
+ * Bot bağlantısını düzgün şekilde sonlandırır
+ */
 process.on('SIGINT', () => {
-  console.log('\n👋 Shutting down gracefully...');
-  client.destroy();
-  process.exit(0);
+  console.log('\n👋 Bot kapatılıyor...');
+  client.destroy(); // Discord bağlantısını kes
+  process.exit(0);  // Uygulamayı kapat
 });
 
