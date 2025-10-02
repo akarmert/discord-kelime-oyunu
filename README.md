@@ -1,156 +1,134 @@
-# MertinBotu - Turkish Word Chain Game Discord Bot
+# 🎮 MertinBotu - Türkçe Kelime Zinciri Oyunu
 
-A Discord bot that plays Turkish word chain game (kelime zinciri) with users.
+Discord sunucularında Türkçe kelime zinciri oyunu oynatan bot.
 
-## Features
+## ✨ Özellikler
 
-- 🎮 Turkish word chain game
-- ✅ Word validation from database
-- 🔄 Prevents word repetition
-- 📊 SQLite database with 2.5M+ Turkish words
-- 🌐 Express.js server for Terms & Privacy pages
-- ☁️ Railway.app deployment ready
+- 🎮 Kelime zinciri oyunu
+- ✅ 2.5M+ Türkçe kelime veritabanı
+- 🔄 Tekrar önleme sistemi
+- 📊 Oyun istatistikleri
+- 🌐 Kullanım şartları ve gizlilik sayfaları
+- ☁️ Railway.app deployment desteği
 
-## Game Rules
+## 📖 Oyun Kuralları
 
-1. Admin sets the game channel using `/mertinbotu kanaladi`
-2. Start the game with `/mertinbotu basla`
-3. Bot sends a random Turkish word
-4. Users reply with a word starting with the **last letter** of the previous word
-5. Valid words get ✅ reaction
-6. Invalid words are deleted
-7. Stop the game with `/mertinbotu bitir`
+1. Yönetici `/mertinbotu kanaladi` ile oyun kanalını ayarlar
+2. `/mertinbotu basla` ile oyun başlatılır
+3. Bot rastgele bir Türkçe kelime gönderir
+4. Kullanıcılar **son harfle başlayan** kelime yazar
+5. Geçerli kelimeler ✅ alır
+6. Geçersiz kelimeler silinir
+7. `/mertinbotu bitir` ile oyun durdurulur
 
-## Setup Instructions
+## 🚀 Kurulum
 
-### Prerequisites
+### Gereksinimler
 
-- Node.js 16.0.0 or higher
+- **Node.js 18.0.0** veya üzeri
 - Discord Bot Token ([Discord Developer Portal](https://discord.com/developers/applications))
 
-### Local Development
+### Yerel Geliştirme
 
-1. Clone the repository:
+1. **Projeyi klonlayın:**
 ```bash
-git clone <your-repo-url>
+git clone <repo-url>
 cd discord-kelime-oyunu
 ```
 
-2. Install dependencies:
+2. **Bağımlılıkları yükleyin:**
 ```bash
 npm install
 ```
 
-3. Create `.env` file:
+3. **`.env` dosyası oluşturun:**
 ```bash
 cp .env.example .env
 ```
 
-4. Edit `.env` and add your Discord bot credentials:
-```
-BOT_TOKEN=your_discord_bot_token_here
-APPLICATION_ID=your_application_id_here
+4. **Discord bot bilgilerinizi ekleyin:**
+```env
+BOT_TOKEN=discord_bot_token_buraya
+APPLICATION_ID=discord_application_id_buraya
 PORT=3000
 ```
 
-5. Setup the database (load words from CSV):
+5. **Veritabanını kurun:**
 ```bash
 npm run setup-db
 ```
 
-6. Start the bot:
+6. **Botu başlatın:**
 ```bash
 npm start
 ```
 
-## Railway.app Deployment
+## ☁️ Railway.app Deployment
 
-### Önemli: Node.js Versiyonu
-Bu proje **Node.js 18+** gerektirir. Railway otomatik olarak doğru versiyonu kullanacaktır.
+### Adımlar
 
-### Deployment Adımları
+1. **Railway.app'te proje oluşturun:**
+   - [Railway.app](https://railway.app) → "New Project" → "Deploy from GitHub repo"
 
-1. **Railway.app'te yeni proje oluşturun:**
-   - [Railway.app](https://railway.app) adresine gidin
-   - "New Project" > "Deploy from GitHub repo" seçin
+2. **Repository'nizi bağlayın:**
+   - GitHub repository'nizi seçin
 
-2. **GitHub repository'nizi bağlayın:**
-   - Repository'nizi seçin
-   - Railway otomatik olarak projeyi algılayacak
+3. **Environment Variables:**
+   - Settings > Variables:
+   ```
+   BOT_TOKEN=discord_bot_token
+   APPLICATION_ID=discord_application_id
+   ```
 
-3. **Environment Variables ekleyin:**
-   Railway dashboard'da Settings > Variables bölümünden:
-   - `BOT_TOKEN`: Discord bot token'ınız
-   - `APPLICATION_ID`: Discord application ID'niz
-   - `NODE_ENV`: `production` (opsiyonel)
+4. **Deploy:**
+   - Railway otomatik olarak Node.js 18 kullanacak
+   - Veritabanı otomatik kurulacak
+   - Bot başlatılacak
 
-4. **Deploy edin:**
-   - Railway otomatik olarak:
-     - Node.js 18 yükleyecek
-     - `npm install` çalıştıracak
-     - `npm run setup-db` ile veritabanını kuracak
-     - `npm start` ile botu başlatacak
+5. **Kontrol:**
+   - Logs'da "✅ Bot aktif" mesajını görmelisiniz
 
-5. **Logları kontrol edin:**
-   - Deployments sekmesinden logları izleyin
-   - "✅ Bot is online" mesajını görmelisiniz
-
-### Sorun Giderme
-
-**ReadableStream hatası alıyorsanız:**
-- Railway'in Node.js 18+ kullandığından emin olun
-- Logs'da `node --version` çıktısını kontrol edin
-- Gerekirse projeyi yeniden deploy edin
-
-**Database hatası alıyorsanız:**
-- `tr_wordlist.csv` dosyasının repository'de olduğundan emin olun
-- Build logs'da "Database setup complete" mesajını kontrol edin
-
-**Bot offline kalıyorsa:**
-- Environment variables'ın doğru girildiğinden emin olun
-- Discord Developer Portal'da bot'un aktif olduğunu kontrol edin
-- Logs'da hata mesajlarını inceleyin
-
-## Project Structure
+## 📁 Proje Yapısı
 
 ```
 discord-kelime-oyunu/
 ├── commands/
-│   └── mertinbotu.js       # Main slash command
+│   └── mertinbotu.js       # Slash komutlar
 ├── public/
-│   ├── terms.html          # Terms of Service
-│   └── privacy.html        # Privacy Policy
+│   ├── terms.html          # Kullanım şartları
+│   └── privacy.html        # Gizlilik politikası
 ├── scripts/
-│   └── setupDatabase.js    # Database initialization
+│   └── setupDatabase.js    # Veritabanı kurulum
 ├── utils/
-│   ├── database.js         # Database helper functions
-│   └── gameLogic.js        # Game logic functions
-├── index.js                # Main entry point
-├── package.json
-├── .env.example
-├── .gitignore
-├── Procfile                # Railway deployment
+│   ├── database.js         # Veritabanı fonksiyonları
+│   └── gameLogic.js        # Oyun mantığı
+├── index.js                # Ana dosya
+├── package.json            # Bağımlılıklar
+├── .env                    # Ortam değişkenleri
+├── .nvmrc                  # Node.js 18
 └── README.md
 ```
 
-## Commands
+## 🎯 Komutlar
 
-- `/mertinbotu kanaladi` - Set the game channel (Admin only)
-- `/mertinbotu basla` - Start the word chain game
-- `/mertinbotu bitir` - Stop the game
+- `/mertinbotu kanaladi` - Oyun kanalını ayarla (Yönetici)
+- `/mertinbotu basla` - Oyunu başlat
+- `/mertinbotu bitir` - Oyunu durdur
+- `/mertinbotu istatistik` - İstatistikleri göster
+- `/mertinbotu bilgi` - Bot bilgisi
 
-## Static Pages
+## 🌐 Web Sayfaları
 
-- `/terms` - Terms of Service
-- `/privacy` - Privacy Policy
+- `/terms` - Kullanım Şartları
+- `/privacy` - Gizlilik Politikası
 
-## Technologies Used
+## 🛠️ Teknolojiler
 
+- **Node.js 18** - Runtime
 - **discord.js v14** - Discord bot framework
-- **better-sqlite3** - SQLite database
-- **Express.js** - Web server for static pages
-- **dotenv** - Environment variable management
+- **better-sqlite3** - SQLite veritabanı
+- **Express.js** - Web sunucusu
 
-## License
+## 📄 Lisans
 
 MIT
