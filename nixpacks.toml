@@ -1,9 +1,0 @@
-[phases.setup]
-nixPkgs = ['nodejs-18_x', 'python3']
-
-[phases.install]
-cmds = ['npm ci --prefer-offline --no-audit']
-
-[start]
-cmd = 'npm run railway'
-
