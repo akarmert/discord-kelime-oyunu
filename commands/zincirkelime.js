@@ -427,9 +427,19 @@ async function handleInfo(interaction) {
     description: 'Türkçe kelime zinciri oyunu botu',
     fields: [
       {
+        name: '👨‍💻 Yapımcı',
+        value: '**MeakReatss**',
+        inline: true,
+      },
+      {
         name: '📚 Veritabanı',
         value: `${totalWords.toLocaleString()} Türkçe kelime`,
-        inline: false, // Tam genişlik
+        inline: true,
+      },
+      {
+        name: '⚙️ Teknoloji',
+        value: 'Node.js 18 • discord.js v14',
+        inline: true,
       },
       {
         name: '🎮 Komutlar',
@@ -453,7 +463,7 @@ async function handleInfo(interaction) {
     ],
     timestamp: new Date().toISOString(), // Zaman damgası
     footer: {
-      text: 'ZincirKelime • discord.js v14',
+      text: 'Yapımcı: MeakReatss',
     },
   };
 

@@ -2,6 +2,8 @@
 
 Discord sunucularında Türkçe kelime zinciri oyunu oynatan bot.
 
+**Yapımcı:** MeakReatss
+
 ## ✨ Özellikler
 
 - 🎮 Kelime zinciri oyunu
@@ -137,6 +139,10 @@ discord-kelime-oyunu/
 - **discord.js v14** - Discord bot framework
 - **better-sqlite3** - SQLite veritabanı
 - **Express.js** - Web sunucusu
+
+## 👨‍💻 Yapımcı
+
+**MeakReatss**
 
 ## 📄 Lisans
 

@@ -5,13 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js",
     "setup-db": "node scripts/setupDatabase.js",
     "migrate-db": "node scripts/migrateDatabase.js",
     "railway": "node scripts/setupDatabase.js && node index.js"
   },
   "keywords": ["discord", "bot", "turkish", "word-game"],
-  "author": "",
+  "author": "MeakReatss",
   "license": "MIT",
   "dependencies": {
     "discord.js": "^14.14.1",
@@ -24,4 +23,3 @@
     "npm": ">=8.0.0"
   }
 }
-

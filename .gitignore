@@ -5,13 +5,12 @@ node_modules/
 .env
 
 # Database
-data.sqlite
-data.sqlite-shm
-data.sqlite-wal
+*.db
+*.db-shm
+*.db-wal
 
 # Logs
 *.log
-npm-debug.log*
 
 # OS
 .DS_Store
@@ -22,4 +21,3 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-
