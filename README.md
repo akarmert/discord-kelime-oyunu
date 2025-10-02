@@ -65,20 +65,51 @@ npm start
 
 ## Railway.app Deployment
 
-1. Create a new project on [Railway.app](https://railway.app)
+### Önemli: Node.js Versiyonu
+Bu proje **Node.js 18+** gerektirir. Railway otomatik olarak doğru versiyonu kullanacaktır.
 
-2. Connect your GitHub repository
+### Deployment Adımları
 
-3. Add environment variables in Railway dashboard:
-   - `BOT_TOKEN`: Your Discord bot token
-   - `APPLICATION_ID`: Your Discord application ID
+1. **Railway.app'te yeni proje oluşturun:**
+   - [Railway.app](https://railway.app) adresine gidin
+   - "New Project" > "Deploy from GitHub repo" seçin
 
-4. Railway will automatically:
-   - Install dependencies
-   - Run the setup script
-   - Start the bot
+2. **GitHub repository'nizi bağlayın:**
+   - Repository'nizi seçin
+   - Railway otomatik olarak projeyi algılayacak
 
-5. The bot will stay online 24/7
+3. **Environment Variables ekleyin:**
+   Railway dashboard'da Settings > Variables bölümünden:
+   - `BOT_TOKEN`: Discord bot token'ınız
+   - `APPLICATION_ID`: Discord application ID'niz
+   - `NODE_ENV`: `production` (opsiyonel)
+
+4. **Deploy edin:**
+   - Railway otomatik olarak:
+     - Node.js 18 yükleyecek
+     - `npm install` çalıştıracak
+     - `npm run setup-db` ile veritabanını kuracak
+     - `npm start` ile botu başlatacak
+
+5. **Logları kontrol edin:**
+   - Deployments sekmesinden logları izleyin
+   - "✅ Bot is online" mesajını görmelisiniz
+
+### Sorun Giderme
+
+**ReadableStream hatası alıyorsanız:**
+- Railway'in Node.js 18+ kullandığından emin olun
+- Logs'da `node --version` çıktısını kontrol edin
+- Gerekirse projeyi yeniden deploy edin
+
+**Database hatası alıyorsanız:**
+- `tr_wordlist.csv` dosyasının repository'de olduğundan emin olun
+- Build logs'da "Database setup complete" mesajını kontrol edin
+
+**Bot offline kalıyorsa:**
+- Environment variables'ın doğru girildiğinden emin olun
+- Discord Developer Portal'da bot'un aktif olduğunu kontrol edin
+- Logs'da hata mesajlarını inceleyin
 
 ## Project Structure
 

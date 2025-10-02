@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
-    "setup-db": "node scripts/setupDatabase.js"
+    "setup-db": "node scripts/setupDatabase.js",
+    "railway": "node scripts/setupDatabase.js && node index.js"
   },
   "keywords": ["discord", "bot", "turkish", "word-game"],
   "author": "",
@@ -18,7 +19,8 @@
     "dotenv": "^16.3.1"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
 
