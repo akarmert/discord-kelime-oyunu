@@ -219,7 +219,7 @@ async function handleStartGame(interaction) {
   await gameChannel.send({
     content: `🎮 **Kelime Zinciri Oyunu Başladı!**\n\n` +
       `İlk kelime: **${initialWord}**\n` +
-      `Sıradaki kelime **${lastLetter.toUpperCase()}** harfi ile başlamalı!\n\n` +
+      `Sıradaki kelime **${lastLetter.toLocaleUpperCase('tr-TR')}** harfi ile başlamalı!\n\n` +
       `📝 Kurallar:\n` +
       `• Kelimeler son harfle başlamalı\n` +
       `• Daha önce kullanılmış kelimeler tekrar kullanılamaz\n` +
@@ -362,7 +362,7 @@ async function handleStats(interaction) {
       },
       {
         name: '🔤 Beklenen Harf',
-        value: gameState.last_letter ? gameState.last_letter.toUpperCase() : 'Yok',
+        value: gameState.last_letter ? gameState.last_letter.toLocaleUpperCase('tr-TR') : 'Yok',
         inline: true,
       },
       {

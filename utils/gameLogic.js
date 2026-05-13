@@ -14,8 +14,13 @@ const {
 } = require('./database');
 
 // ============================================
-// YARDIMCI FONKSİYONLAR
+// YARDIMCI FONKSİYONLAR VE DEĞİŞKENLER
 // ============================================
+
+// Kullanıcı bekleme sürelerini tutan Map (kullanici_id => son_mesaj_zamani)
+const userCooldowns = new Map();
+const COOLDOWN_SECONDS = 3;
+
 
 /**
  * Türkçe karakterleri normalize eder (küçük harf + boşluk temizleme)
@@ -95,6 +100,26 @@ async function handleMessage(message) {
 
     // Kullanıcının gönderdiği kelimeyi al ve normalize et
     const userWord = normalizeTurkish(message.content);
+    const userId = message.author.id;
+    const now = Date.now();
+
+    // ============================================
+    // 0. KONTROL: BEKLEME SÜRESİ (COOLDOWN)
+    // ============================================
+    if (userCooldowns.has(userId)) {
+      const expirationTime = userCooldowns.get(userId) + (COOLDOWN_SECONDS * 1000);
+      if (now < expirationTime) {
+        const timeLeft = ((expirationTime - now) / 1000).toFixed(1);
+        await message.delete().catch(console.error);
+        await message.channel.send(`⏱️ <@${userId}> Çok hızlısınız! Yeni kelime yazmak için **${timeLeft} saniye** beklemelisiniz.`).then(msg => {
+          setTimeout(() => msg.delete().catch(console.error), 3000);
+        });
+        return;
+      }
+    }
+
+    // Cooldown'u güncelle
+    userCooldowns.set(userId, now);
 
     // ============================================
     // 1. KONTROL: KELİME FORMATI
@@ -146,7 +171,7 @@ async function handleMessage(message) {
     // İlk harf kontrolü
     if (firstLetter !== expectedLetter) {
       await message.delete().catch(console.error);
-      await message.channel.send(`❌ <@${message.author.id}> Kelime **${expectedLetter.toUpperCase()}** harfi ile başlamalı!`).then(msg => {
+      await message.channel.send(`❌ <@${message.author.id}> Kelime **${expectedLetter.toLocaleUpperCase('tr-TR')}** harfi ile başlamalı!`).then(msg => {
         setTimeout(() => msg.delete().catch(console.error), 3000);
       });
       return;
@@ -167,7 +192,7 @@ async function handleMessage(message) {
     const lastLetter = getLastLetter(userWord);
 
     // Onay mesajı gönder
-    await message.channel.send(`✅ **${userWord}** doğru! Sıradaki harf **${lastLetter.toUpperCase()}**.`);
+    await message.channel.send(`✅ **${userWord}** doğru! Sıradaki harf **${lastLetter.toLocaleUpperCase('tr-TR')}**.`);
 
   } catch (error) {
     console.error('Mesaj işlenirken hata:', error);
