@@ -18,7 +18,7 @@ const {
 } = require('../utils/database');
 
 // Oyun mantığı fonksiyonlarını içe aktar
-const { getGameStats } = require('../utils/gameLogic');
+const { getGameStats, toTurkishUpperCase } = require('../utils/gameLogic');
 
 // ============================================
 // SLASH KOMUT TANIMI
@@ -219,7 +219,7 @@ async function handleStartGame(interaction) {
   await gameChannel.send({
     content: `🎮 **Kelime Zinciri Oyunu Başladı!**\n\n` +
       `İlk kelime: **${initialWord}**\n` +
-      `Sıradaki kelime **${lastLetter.toLocaleUpperCase('tr-TR')}** harfi ile başlamalı!\n\n` +
+      `Sıradaki kelime **${toTurkishUpperCase(lastLetter)}** harfi ile başlamalı!\n\n` +
       `📝 Kurallar:\n` +
       `• Kelimeler son harfle başlamalı\n` +
       `• Daha önce kullanılmış kelimeler tekrar kullanılamaz\n` +
@@ -362,7 +362,7 @@ async function handleStats(interaction) {
       },
       {
         name: '🔤 Beklenen Harf',
-        value: gameState.last_letter ? gameState.last_letter.toLocaleUpperCase('tr-TR') : 'Yok',
+        value: gameState.last_letter ? toTurkishUpperCase(gameState.last_letter) : 'Yok',
         inline: true,
       },
       {

@@ -23,12 +23,34 @@ const COOLDOWN_SECONDS = 3;
 
 
 /**
+ * Türkçe karakterleri doğru şekilde büyük harfe çevirir
+ * @param {string} text - Metin
+ * @returns {string} - Büyük harfli metin
+ */
+function toTurkishUpperCase(text) {
+  if (!text) return text;
+  const letters = { "i": "İ", "ş": "Ş", "ğ": "Ğ", "ü": "Ü", "ö": "Ö", "ç": "Ç", "ı": "I" };
+  return text.replace(/[iışğüöç]/g, letter => letters[letter]).toUpperCase();
+}
+
+/**
+ * Türkçe karakterleri doğru şekilde küçük harfe çevirir
+ * @param {string} text - Metin
+ * @returns {string} - Küçük harfli metin
+ */
+function toTurkishLowerCase(text) {
+  if (!text) return text;
+  const letters = { "İ": "i", "I": "ı", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ö": "ö", "Ç": "ç" };
+  return text.replace(/[İIŞĞÜÖÇ]/g, letter => letters[letter]).toLowerCase();
+}
+
+/**
  * Türkçe karakterleri normalize eder (küçük harf + boşluk temizleme)
  * @param {string} text - Normalize edilecek metin
  * @returns {string} - Normalize edilmiş metin
  */
 function normalizeTurkish(text) {
-  return text.toLowerCase().trim();
+  return toTurkishLowerCase(text).trim();
 }
 
 /**
@@ -171,7 +193,7 @@ async function handleMessage(message) {
     // İlk harf kontrolü
     if (firstLetter !== expectedLetter) {
       await message.delete().catch(console.error);
-      await message.channel.send(`❌ <@${message.author.id}> Kelime **${expectedLetter.toLocaleUpperCase('tr-TR')}** harfi ile başlamalı!`).then(msg => {
+      await message.channel.send(`❌ <@${message.author.id}> Kelime **${toTurkishUpperCase(expectedLetter)}** harfi ile başlamalı!`).then(msg => {
         setTimeout(() => msg.delete().catch(console.error), 3000);
       });
       return;
@@ -192,7 +214,7 @@ async function handleMessage(message) {
     const lastLetter = getLastLetter(userWord);
 
     // Onay mesajı gönder
-    await message.channel.send(`✅ **${userWord}** doğru! Sıradaki harf **${lastLetter.toLocaleUpperCase('tr-TR')}**.`);
+    await message.channel.send(`✅ **${userWord}** doğru! Sıradaki harf **${toTurkishUpperCase(lastLetter)}**.`);
 
   } catch (error) {
     console.error('Mesaj işlenirken hata:', error);
@@ -256,5 +278,7 @@ module.exports = {
   isValidTurkishWord,     // Geçerli Türkçe kelime mi kontrol et
   getGameStats,           // Oyun istatistikleri
   getLeaderboard,         // Lider tablosu
+  toTurkishUpperCase,     // Türkçe büyük harf
+  toTurkishLowerCase,     // Türkçe küçük harf
 };
 
