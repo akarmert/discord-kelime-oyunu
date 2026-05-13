@@ -383,7 +383,7 @@ async function handleStats(interaction) {
     ],
     timestamp: new Date().toISOString(), // Zaman damgası
     footer: {
-      text: 'MertinBotu',
+      text: 'ZincirKelime',
     },
   };
 
