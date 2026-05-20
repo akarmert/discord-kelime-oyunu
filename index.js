@@ -228,6 +228,31 @@ app.get('/health', (req, res) => {
 });
 
 // ============================================
+// HATA YÖNETİMİ VE OTOMATİK YENİDEN BAŞLATMA
+// ============================================
+
+// Beklenmeyen Node.js hatalarını yakala ve uygulamayı sonlandır (Railway yeniden başlatacaktır)
+process.on('unhandledRejection', error => {
+  console.error('❌ Yakalanmamış Promise Reddi:', error);
+  process.exit(1);
+});
+
+process.on('uncaughtException', error => {
+  console.error('❌ Yakalanmamış İstisna:', error);
+  process.exit(1);
+});
+
+// Discord.js istemci hatalarını yakala
+client.on('error', error => {
+  console.error('❌ Discord Client Hatası:', error);
+  process.exit(1);
+});
+
+client.on('shardError', error => {
+  console.error('❌ Discord WebSocket bağlantı hatası:', error);
+});
+
+// ============================================
 // SUNUCULARI BAŞLAT
 // ============================================
 
